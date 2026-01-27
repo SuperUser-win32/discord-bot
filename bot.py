@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
 from discord.ext import commands
-from discord import Embed, Member, Intents, Client, Color
+from discord import Embed, Member, Intents, Color
 from contextlib import suppress
 import os
 import logging
@@ -16,7 +16,7 @@ Bot_logger.addHandler(stream_handler)
 
 load_dotenv()
 
-client = Client(intents=Intents.all())
+
 bot_user_id = int(os.getenv("BOT_USER_ID"))
 welcoming_channel_id = int(os.getenv("WELCOMING_CHANNEL_ID"))
 
@@ -24,16 +24,16 @@ bot = commands.Bot("!", intents=Intents.all())
 
 
 async def send_to_channel(channel_id: int, *args, **kwargs) -> None:
-    channel = client.get_channel(channel_id)
+    channel = bot.get_channel(channel_id)
     await channel.send(*args, **kwargs)
 
 
-@client.event
+@bot.event
 async def on_ready():
     Bot_logger.info("The bot has started")
 
 
-@client.event
+@bot.event
 async def on_member_remove(member: Member):
     embed_sent = Embed(
         title=f"Bye {member.name}",
@@ -45,7 +45,7 @@ async def on_member_remove(member: Member):
     await send_to_channel(welcoming_channel_id, embed=embed_sent)
 
 
-@client.event
+@bot.event
 async def on_member_join(member: Member):
     embed_sent = Embed(
         title=f"Welcome {member.name}",
@@ -57,4 +57,45 @@ async def on_member_join(member: Member):
     await send_to_channel(welcoming_channel_id, embed=embed_sent)
 
 
-client.run(os.getenv("DISCORD_API_KEY"), log_formatter=Formatter)
+@bot.command(description="bans a list of users from the server")
+@commands.has_permissions(administrator=True)
+async def mass_ban(ctx: commands.context.Context, *users: Member) -> None:
+    for user in users:
+        await user.ban()
+        await user.send(f">> You got banned by {ctx.author.name}")
+
+
+@bot.command(description="bans a user from the server")
+@commands.has_permissions(ban_members=True)
+async def ban(ctx: commands.context.Context, user: Member) -> None:
+    await user.ban()
+    await user.send(f">> You got banned by {ctx.author.name}")
+
+
+@bot.command(description="kicks a user from the server")
+@commands.has_permissions(administrator=True)
+async def kick(ctx: commands.context.Context, user: Member) -> None:
+    await user.kick()
+    await user.send(f">> You got kicked by {ctx.author.name}")
+
+
+@bot.command(description="mute a user from the server")
+@commands.has_permissions(administrator=True)
+async def mute(ctx: commands.context.Context, user: Member) -> None:
+    await user.edit(mute=True)
+    await ctx.send(f">> You got muted by {ctx.author.name}", ephemeral=True)
+
+
+@bot.command(description="unmute a user from the server")
+@commands.has_permissions(administrator=True)
+async def unmute(ctx: commands.context.Context, user: Member) -> None:
+    await user.edit(mute=False)
+    await ctx.send(f">> You got unmuted by {ctx.author.name}", ephemeral=True)
+
+
+@bot.command(description="gets you the bots lentency")
+async def ping(ctx: commands.context.Context) -> None:
+    await ctx.send(f">> bot's lentency : {bot.latency * 1000}ms", ephemeral=True)
+
+
+bot.run(os.getenv("DISCORD_API_KEY"), log_formatter=Formatter)

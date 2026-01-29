@@ -2,6 +2,9 @@ from dotenv import load_dotenv
 from discord.ext import commands
 from discord import Embed, Member, Intents, Color
 from contextlib import suppress
+from functools import lru_cache
+import random
+import json
 import os
 import logging
 
@@ -21,6 +24,24 @@ bot_user_id = int(os.getenv("BOT_USER_ID"))
 welcoming_channel_id = int(os.getenv("WELCOMING_CHANNEL_ID"))
 
 bot = commands.Bot("!", intents=Intents.all())
+
+
+@lru_cache
+def get_joke(id: int, source_file: str = "data.json") -> str:
+    try:
+        with open(source_file, "r", encoding="utf-8") as f:
+            return json.load(f)["jokes"][id]
+    except OSError:
+        return "There is no jokes available at the moment"
+
+
+@lru_cache
+def get_meme(id: int, source_file: str = "data.json") -> str:
+    try:
+        with open(source_file, "r", encoding="utf-8") as f:
+            return json.load(f)["memes"][id]
+    except OSError:
+        return "There is no memes available at the moment"
 
 
 async def send_to_channel(channel_id: int, *args, **kwargs) -> None:
@@ -95,7 +116,20 @@ async def unmute(ctx: commands.context.Context, user: Member) -> None:
 
 @bot.command(description="gets you the bots lentency")
 async def ping(ctx: commands.context.Context) -> None:
-    await ctx.send(f">> bot's lentency : {bot.latency * 1000}ms", ephemeral=True)
+    if ctx.channel.id == 1465016548908601446:
+        await ctx.send(f">> bot's lentency : {bot.latency * 1000}ms", ephemeral=True)
+
+
+@bot.command(description="sends a joke")
+async def joke(ctx: commands.context.Context) -> None:
+    if ctx.channel.id == 1465016548908601446:
+        await ctx.send(get_joke(random.randrange(0, 20)))
+
+
+@bot.command(description="sends a meme")
+async def meme(ctx: commands.context.Context) -> None:
+    if ctx.channel.id == 1465016548908601446:
+        await ctx.send(get_meme(random.randrange(0, 13)))
 
 
 bot.run(os.getenv("DISCORD_API_KEY"), log_formatter=Formatter)

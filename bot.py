@@ -50,11 +50,6 @@ async def send_to_channel(channel_id: int, *args, **kwargs) -> None:
 
 
 @bot.event
-async def on_ready():
-    Bot_logger.info("The bot has started")
-
-
-@bot.event
 async def on_member_remove(member: Member) -> None:
     embed_sent = Embed(
         title=f"Bye {member.name}",
@@ -83,98 +78,126 @@ async def on_error(event, *args, **kwargs) -> None:
     Bot_logger.info(f"error at {event} && {args} && {kwargs}")
 
 
-@bot.command(description="bans a list of users from the server")
-@commands.has_permissions(administrator=True)
-async def mass_ban(ctx: commands.context.Context, *users: Member) -> None:
-    for user in users:
+class Moderation(commands.Cog):
+    def __init__(self, client):
+        self.client = client
+
+    async def cog_check(self, ctx):
+        return ctx.guild is not None
+
+    @commands.command()
+    @commands.has_permissions(administrator=True)
+    async def mass_ban(self, ctx: commands.context.Context, *users: Member) -> None:
+        for user in users:
+            await user.ban()
+            await user.send(f">> You got banned by {ctx.author.name}")
+
+    @commands.command()
+    @commands.has_permissions(ban_members=True)
+    async def ban(self, ctx: commands.context.Context, user: Member) -> None:
         await user.ban()
         await user.send(f">> You got banned by {ctx.author.name}")
 
+    @commands.command()
+    @commands.has_permissions(administrator=True)
+    async def kick(self, ctx: commands.context.Context, user: Member) -> None:
+        await user.kick()
+        await user.send(f">> You got kicked by {ctx.author.name}")
 
-@bot.command(description="bans a user from the server")
-@commands.has_permissions(ban_members=True)
-async def ban(ctx: commands.context.Context, user: Member) -> None:
-    await user.ban()
-    await user.send(f">> You got banned by {ctx.author.name}")
+    @commands.command()
+    @commands.has_permissions(administrator=True)
+    async def mute(self, ctx: commands.context.Context, user: Member) -> None:
+        await user.edit(mute=True)
+        await ctx.send(f">> You got muted by {ctx.author.name}", ephemeral=True)
 
-
-@bot.command(description="kicks a user from the server")
-@commands.has_permissions(administrator=True)
-async def kick(ctx: commands.context.Context, user: Member) -> None:
-    await user.kick()
-    await user.send(f">> You got kicked by {ctx.author.name}")
-
-
-@bot.command(description="mute a user from the server")
-@commands.has_permissions(administrator=True)
-async def mute(ctx: commands.context.Context, user: Member) -> None:
-    await user.edit(mute=True)
-    await ctx.send(f">> You got muted by {ctx.author.name}", ephemeral=True)
+    @commands.command()
+    @commands.has_permissions(administrator=True)
+    async def unmute(self, ctx: commands.context.Context, user: Member) -> None:
+        await user.edit(mute=False)
+        await ctx.send(f">> You got unmuted by {ctx.author.name}", ephemeral=True)
 
 
-@bot.command(description="unmute a user from the server")
-@commands.has_permissions(administrator=True)
-async def unmute(ctx: commands.context.Context, user: Member) -> None:
-    await user.edit(mute=False)
-    await ctx.send(f">> You got unmuted by {ctx.author.name}", ephemeral=True)
+class Fun(commands.Cog):
+    def __init__(self, client):
+        self.client = client
+
+    async def cog_check(self, ctx):
+        return ctx.guild is not None
+
+    @commands.command()
+    async def joke(self, ctx: commands.context.Context) -> None:
+        if ctx.channel.id == 1465016548908601446:
+            await ctx.send(get_joke(random.randrange(0, 20)))
+
+    @commands.command()
+    async def meme(self, ctx: commands.context.Context) -> None:
+        if ctx.channel.id == 1465016548908601446:
+            await ctx.send(get_meme(random.randrange(0, 13)))
 
 
-@bot.command(description="gets you the bots lentency")
-async def ping(ctx: commands.context.Context) -> None:
-    if ctx.channel.id == 1465016548908601446:
-        await ctx.send(f">> bot's lentency : {bot.latency * 1000}ms", ephemeral=True)
+class Utility(commands.Cog):
+    def __init__(self, client):
+        self.client = client
+
+    async def cog_check(self, ctx):
+        return ctx.guild is not None
+
+    @commands.command()
+    async def serverinfo(self, ctx: commands.context.Context) -> None:
+        if ctx.channel.id == 1465016548908601446:
+            embed = Embed(
+                title="Serverinfo",
+                color=Color.dark_blue(),
+            )
+            with suppress(AttributeError):
+                embed.set_thumbnail(url=ctx.guild.icon.url)
+            embed.add_field(name="server name", value=ctx.guild.name)
+            embed.add_field(name="member count", value=ctx.guild.member_count)
+            embed.add_field(
+                name="roles", value=" ".join(map(str, ctx.guild.roles)), inline=False
+            )
+            await ctx.send(embed=embed, ephemeral=True)
+
+    @commands.command()
+    async def userinfo(self, ctx: commands.context.Context, member: Member) -> None:
+        if ctx.channel.id == 1465016548908601446:
+            embed = Embed(
+                title="Userinfo",
+                color=Color.dark_blue(),
+            )
+            with suppress(AttributeError):
+                embed.set_thumbnail(url=member.avatar.url)
+            embed.add_field(name="name", value=member.name)
+            embed.add_field(
+                name="roles",
+                value=" ".join(map(str, member.roles)),
+                inline=False,
+            )
+            await ctx.send(embed=embed, ephemeral=True)
 
 
-@bot.command(description="sends a joke")
-async def joke(ctx: commands.context.Context) -> None:
-    if ctx.channel.id == 1465016548908601446:
-        await ctx.send(get_joke(random.randrange(0, 20)))
+class General(commands.Cog):
+    def __init__(self, client):
+        self.client = client
+
+    async def cog_check(self, ctx):
+        return ctx.guild is not None
+
+    @commands.command()
+    async def ping(self, ctx: commands.context.Context) -> None:
+        if ctx.channel.id == 1465016548908601446:
+            await ctx.send(
+                f">> bot's lentency : {bot.latency * 1000}ms", ephemeral=True
+            )
 
 
-@bot.command(description="sends a meme")
-async def meme(ctx: commands.context.Context) -> None:
-    if ctx.channel.id == 1465016548908601446:
-        await ctx.send(get_meme(random.randrange(0, 13)))
-
-
-@bot.command()
-async def serverinfo(ctx: commands.context.Context) -> None:
-    if ctx.channel.id == 1465016548908601446:
-        embed = Embed(
-            title="Serverinfo",
-            color=Color.dark_blue(),
-        )
-        with suppress(AttributeError):
-            embed.set_thumbnail(url=ctx.guild.icon.url)
-        embed.add_field(name="server name", value=ctx.guild.name)
-        embed.add_field(name="member count", value=ctx.guild.member_count)
-        embed.add_field(
-            name="roles", value=" - ".join(map(str, ctx.guild.roles)), inline=False
-        )
-        await ctx.send(embed=embed, ephemeral=True)
-
-
-@bot.command()
-async def userinfo(ctx: commands.context.Context, member: Member) -> None:
-    if ctx.channel.id == 1465016548908601446:
-        embed = Embed(
-            title="Userinfo",
-            color=Color.dark_blue(),
-        )
-        with suppress(AttributeError):
-            embed.set_thumbnail(url=member.avatar.url)
-        embed.add_field(name="name", value=member.name)
-        embed.add_field(
-            name="roles",
-            value=" - ".join(
-                map(
-                    str,
-                    member.roles,
-                )
-            ),
-            inline=False,
-        )
-        await ctx.send(embed=embed, ephemeral=True)
+@bot.event
+async def on_ready():
+    await bot.add_cog(Moderation(bot))
+    await bot.add_cog(Utility(bot))
+    await bot.add_cog(Fun(bot))
+    await bot.add_cog(General(bot))
+    Bot_logger.info("The bot has started")
 
 
 if __name__ == "__main__":

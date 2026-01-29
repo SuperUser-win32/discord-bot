@@ -165,7 +165,14 @@ async def userinfo(ctx: commands.context.Context, member: Member) -> None:
             embed.set_thumbnail(url=member.avatar.url)
         embed.add_field(name="name", value=member.name)
         embed.add_field(
-            name="roles", value=" - ".join(map(str, member.roles)), inline=False
+            name="roles",
+            value=" - ".join(
+                map(
+                    str,
+                    member.roles,
+                )
+            ),
+            inline=False,
         )
         await ctx.send(embed=embed, ephemeral=True)
 

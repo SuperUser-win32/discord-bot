@@ -154,7 +154,7 @@ class Utility(commands.Cog):
             embed.add_field(name="server name", value=ctx.guild.name)
             embed.add_field(name="member count", value=ctx.guild.member_count)
             embed.add_field(
-                name="roles", value=" ".join(map(str, ctx.guild.roles)), inline=False
+                name="roles", value=" - ".join(map(str, ctx.guild.roles)), inline=False
             )
             await ctx.send(embed=embed, ephemeral=True)
 
@@ -170,7 +170,7 @@ class Utility(commands.Cog):
             embed.add_field(name="name", value=member.name)
             embed.add_field(
                 name="roles",
-                value=" ".join(map(str, member.roles)),
+                value=" - ".join(map(str, member.roles)),
                 inline=False,
             )
             await ctx.send(embed=embed, ephemeral=True)

@@ -144,10 +144,28 @@ async def serverinfo(ctx: commands.context.Context) -> None:
             title="Serverinfo",
             color=Color.dark_blue(),
         )
+        with suppress(AttributeError):
+            embed.set_thumbnail(url=ctx.guild.icon.url)
         embed.add_field(name="server name", value=ctx.guild.name)
         embed.add_field(name="member count", value=ctx.guild.member_count)
         embed.add_field(
             name="roles", value=" - ".join(map(str, ctx.guild.roles)), inline=False
+        )
+        await ctx.send(embed=embed, ephemeral=True)
+
+
+@bot.command()
+async def userinfo(ctx: commands.context.Context, member: Member) -> None:
+    if ctx.channel.id == 1465016548908601446:
+        embed = Embed(
+            title="Userinfo",
+            color=Color.dark_blue(),
+        )
+        with suppress(AttributeError):
+            embed.set_thumbnail(url=member.avatar.url)
+        embed.add_field(name="name", value=member.name)
+        embed.add_field(
+            name="roles", value=" - ".join(map(str, member.roles)), inline=False
         )
         await ctx.send(embed=embed, ephemeral=True)
 

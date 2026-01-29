@@ -55,7 +55,7 @@ async def on_ready():
 
 
 @bot.event
-async def on_member_remove(member: Member):
+async def on_member_remove(member: Member) -> None:
     embed_sent = Embed(
         title=f"Bye {member.name}",
         description="We wish you the best",
@@ -67,7 +67,7 @@ async def on_member_remove(member: Member):
 
 
 @bot.event
-async def on_member_join(member: Member):
+async def on_member_join(member: Member) -> None:
     embed_sent = Embed(
         title=f"Welcome {member.name}",
         description="We welcome you into the server",
@@ -79,7 +79,7 @@ async def on_member_join(member: Member):
 
 
 @bot.event
-async def on_error(event, *args, **kwargs):
+async def on_error(event, *args, **kwargs) -> None:
     Bot_logger.info(f"error at {event} && {args} && {kwargs}")
 
 

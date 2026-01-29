@@ -137,4 +137,21 @@ async def meme(ctx: commands.context.Context) -> None:
         await ctx.send(get_meme(random.randrange(0, 13)))
 
 
-bot.run(os.getenv("DISCORD_API_KEY"), log_formatter=Formatter)
+@bot.command()
+async def serverinfo(ctx: commands.context.Context) -> None:
+    if ctx.channel.id == 1465016548908601446:
+        embed = Embed(
+            title="Serverinfo",
+            color=Color.dark_blue(),
+        )
+        embed.add_field(name="server name", value=ctx.guild.name)
+        embed.add_field(name="member count", value=ctx.guild.member_count)
+        embed.add_field(
+            name="roles", value=" - ".join(map(str, ctx.guild.roles)), inline=False
+        )
+        await ctx.send(embed=embed, ephemeral=True)
+
+
+if __name__ == "__main__":
+    bot.run(os.getenv("DISCORD_API_KEY"), log_formatter=Formatter)
+    Bot_logger.info("The bot has shutdowned")

@@ -54,11 +54,7 @@ pip install -r requirements.txt
 
 ### Configure the Bot
 
-Create a `.env` file in the root directory and add your Discord bot token:
-
-```plaintext
-DISCORD_TOKEN=your_discord_bot_token
-```
+Create a `.env` file in the root directory and add your Discord bot token and channel and bot IDs
 
 ### Run the Bot
 

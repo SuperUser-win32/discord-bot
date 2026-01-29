@@ -78,6 +78,11 @@ async def on_member_join(member: Member):
     await send_to_channel(welcoming_channel_id, embed=embed_sent)
 
 
+@bot.event
+async def on_error(event, *args, **kwargs):
+    Bot_logger.info(f"error at {event} && {args} && {kwargs}")
+
+
 @bot.command(description="bans a list of users from the server")
 @commands.has_permissions(administrator=True)
 async def mass_ban(ctx: commands.context.Context, *users: Member) -> None:

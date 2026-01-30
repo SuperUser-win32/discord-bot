@@ -14,7 +14,6 @@
 ##### General Commands
 
 - `!ping`: Check the bot's latency.
-- `!help`: Display a list of available commands.
 
 ##### Moderation Commands
 

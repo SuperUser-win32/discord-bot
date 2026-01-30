@@ -19,8 +19,8 @@ Bot_logger.addHandler(stream_handler)
 
 load_dotenv()
 
-
 bot_user_id = int(os.getenv("BOT_USER_ID"))
+bot_channel_id = int(os.getenv("BOT_COMMANDS_CHANNEL_ID"))
 welcoming_channel_id = int(os.getenv("WELCOMING_CHANNEL_ID"))
 
 bot = commands.Bot("!", intents=Intents.all())
@@ -31,7 +31,7 @@ def get_joke(id: int, source_file: str = "data.json") -> str:
     try:
         with open(source_file, "r", encoding="utf-8") as f:
             return json.load(f)["jokes"][id]
-    except OSError:
+    except (OSError, json.JSONDecodeError):
         return "There is no jokes available at the moment"
 
 
@@ -40,7 +40,7 @@ def get_meme(id: int, source_file: str = "data.json") -> str:
     try:
         with open(source_file, "r", encoding="utf-8") as f:
             return json.load(f)["memes"][id]
-    except OSError:
+    except (OSError, json.JSONDecodeError):
         return "There is no memes available at the moment"
 
 
@@ -126,12 +126,12 @@ class Fun(commands.Cog):
 
     @commands.command()
     async def joke(self, ctx: commands.context.Context) -> None:
-        if ctx.channel.id == 1465016548908601446:
+        if ctx.channel.id == bot_channel_id:
             await ctx.send(get_joke(random.randrange(0, 20)))
 
     @commands.command()
     async def meme(self, ctx: commands.context.Context) -> None:
-        if ctx.channel.id == 1465016548908601446:
+        if ctx.channel.id == bot_channel_id:
             await ctx.send(get_meme(random.randrange(0, 13)))
 
 
@@ -144,7 +144,7 @@ class Utility(commands.Cog):
 
     @commands.command()
     async def serverinfo(self, ctx: commands.context.Context) -> None:
-        if ctx.channel.id == 1465016548908601446:
+        if ctx.channel.id == bot_channel_id:
             embed = Embed(
                 title="Serverinfo",
                 color=Color.dark_blue(),
@@ -160,7 +160,7 @@ class Utility(commands.Cog):
 
     @commands.command()
     async def userinfo(self, ctx: commands.context.Context, member: Member) -> None:
-        if ctx.channel.id == 1465016548908601446:
+        if ctx.channel.id == bot_channel_id:
             embed = Embed(
                 title="Userinfo",
                 color=Color.dark_blue(),
@@ -185,7 +185,7 @@ class General(commands.Cog):
 
     @commands.command()
     async def ping(self, ctx: commands.context.Context) -> None:
-        if ctx.channel.id == 1465016548908601446:
+        if ctx.channel.id == bot_channel_id:
             await ctx.send(
                 f">> bot's lentency : {bot.latency * 1000}ms", ephemeral=True
             )
@@ -201,5 +201,7 @@ async def on_ready():
 
 
 if __name__ == "__main__":
-    bot.run(os.getenv("DISCORD_API_KEY"), log_formatter=Formatter)
-    Bot_logger.info("The bot has shutdowned")
+    try:
+        bot.run(os.getenv("DISCORD_API_KEY"), log_formatter=Formatter)
+    finally:
+        Bot_logger.info("The bot has shutdowned")
